@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Текущая погода</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .location {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        
+        .city-name {
+            font-size: 32px;
+            color: #1a2980;
+            font-weight: bold;
+        }
+        
+        .country {
+            background: #e3f2fd;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 16px;
+            color: #1565c0;
+        }
+        
+        .weather-main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .weather-icon {
+            font-size: 80px;
+        }
+        
+        .temperature {
+            font-size: 72px;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .unit {
+            font-size: 24px;
+            color: #666;
+        }
+        
+        .weather-description {
+            font-size: 24px;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .detail-item {
+            text-align: left;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .detail-label {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .time {
+            color: #6c757d;
+            font-size: 16px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        .form-group {
+            margin: 30px 0 20px 0;
+        }
+        
+        input[type="text"] {
+            width: 70%;
+            padding: 15px 25px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #1a2980;
+            box-shadow: 0 0 0 3px rgba(26, 41, 128, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 41, 128, 0.3);
+        }
+        
+        .api-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .api-link {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #1a2980;
+            text-decoration: none;
+            font-family: monospace;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .api-link:hover {
+            background: #e9ecef;
+            text-decoration: underline;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            color: #6c757d;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .powered-by {
+            font-size: 12px;
+            color: #26d0ce;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            
+            .weather-details {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .weather-main {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            input[type="text"] {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            button {
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            .footer {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .temperature {
+                font-size: 60px;
+            }
+            
+            .weather-icon {
+                font-size: 60px;
+            }
+            
+            .city-name {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ Погода сейчас</h1>
+        
+        <div th:if="${error}" class="error-message">
+            <span th:text="${errorMessage}">Ошибка</span>
+        </div>
+        
+        <div class="location">
+            <div class="city-name" th:text="${weather.city}">Город</div>
+            <div class="country" th:text="${weather.country}">Страна</div>
+        </div>
+        
+        <div class="weather-main">
+            <div class="weather-icon" th:text="${weather.weatherIcon}">🌡️</div>
+            <div class="temperature">
+                <span th:text="${weather.temperature}">0</span>
+                <span class="unit">°C</span>
+            </div>
+        </div>
+        
+        <div class="weather-description" th:text="${weather.description}">Описание погоды</div>
+        
+        <div class="weather-details">
+            <div class="detail-item">
+                <div class="detail-label">Ощущается как</div>
+                <div class="detail-value">
+                    <span th:text="${weather.feelsLike}">0</span>°C
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Влажность</div>
+                <div class="detail-value">
+                    <span th:text="${weather.humidity}">0</span>%
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Давление</div>
+                <div class="detail-value">
+                    <span th:text="${weather.pressure}">0</span> гПа
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Ветер</div>
+                <div class="detail-value">
+                    <span th:text="${weather.windSpeed}">0</span> м/с
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Минимальная</div>
+                <div class="detail-value">
+                    <span th:text="${weather.tempMin}">0</span>°C
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Максимальная</div>
+                <div class="detail-value">
+                    <span th:text="${weather.tempMax}">0</span>°C
+                </div>
+            </div>
+        </div>
+        
+        <div class="time" th:text="${'Обновлено: ' + weather.currentTime}">Время обновления</div>
+        
+        <form action="/" method="get" class="form-group">
+            <input type="text" name="city" placeholder="Введите город на английском (например: London, Paris, Tokyo)" 
+                   th:value="${weather.city}">
+            <button type="submit">Показать погоду</button>
+        </form>
+        
+        <div class="api-section">
+            <p>API Endpoints:</p>
+            <a th:href="@{/api/temperature(city=${weather.city})}" 
+               class="api-link" target="_blank">
+               GET /api/temperature?city=<span th:text="${weather.city}"></span>
+            </a>
+        </div>
+        
+        <div class="footer">
+            <div>Приложение для отображения текущей погоды</div>
+            <div class="powered-by">Powered by OpenWeatherMap</div>
+        </div>
+    </div>
+    
+    <script>
+        // Автоматическое обновление каждые 5 минут
+        setTimeout(function() {
+            window.location.reload();
+        }, 300000); // 5 минут
+        
+        // Подсказка для пользователя
+        document.querySelector('input[name="city"]').addEventListener('focus', function() {
+            this.setAttribute('title', 'Вводите город на английском языке. Например: Moscow, London, New York');
+        });
+    </script>
+</body>
+</html>

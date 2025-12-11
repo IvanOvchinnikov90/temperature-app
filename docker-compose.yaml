@@ -1,0 +1,53 @@
+services:
+  temperature-app:
+    container_name: temperature-app
+    build: ./temperature-app
+    ports:
+      - '8080:8080'              
+    networks:        
+      - ingres
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus:/etc/prometheus/
+    networks:
+      - ingres
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana:/var/lib/grafana
+    networks:
+      - ingres
+        
+  node_exporter:
+    container_name: node_exporter
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    networks:
+      - ingres
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./blackbox.yml:/etc/blackbox_exporter/config.yml
+    command:
+      - '--config.file=/etc/blackbox_exporter/config.yml'
+    networks:
+      - ingres        
+volumes:
+  prometheus:
+  grafana:
+networks:
+  ingres:
+    driver: bridge
